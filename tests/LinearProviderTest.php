@@ -70,3 +70,50 @@ it('returns a user instance for the authenticated request', function () {
         ->and($result->refreshToken)->toBe('refresh-token')
         ->and($result->expiresIn)->toBe(3600);
 });
+
+it('can customize requested user fields', function () {
+    $provider = new LinearProvider(
+        Request::create('http://localhost'),
+        'client-id',
+        'client-secret',
+        'http://localhost/callback'
+    );
+
+    $provider->fields(['id', 'name', 'email', 'admin', 'active']);
+
+    $url = $provider->redirect()->getTargetUrl();
+
+    expect($url)->toContain('https://linear.app/oauth/authorize');
+});
+
+it('handles missing user data gracefully', function () {
+    $request = Request::create('http://localhost', 'GET', ['code' => 'code', 'state' => 'state']);
+    $request->setLaravelSession($session = m::mock('Illuminate\Contracts\Session\Session'));
+    $session->shouldReceive('pull')->once()->with('state')->andReturn('state');
+
+    $provider = m::mock(LinearProvider::class, [$request, 'client-id', 'client-secret', 'redirect-uri'])
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods();
+
+    $token = m::mock('Laravel\Socialite\Two\AccessTokenResponse');
+    $token->shouldReceive('offsetGet')->with('access_token')->andReturn('access-token');
+    $token->shouldReceive('offsetGet')->with('refresh_token')->andReturn(null);
+    $token->shouldReceive('offsetGet')->with('expires_in')->andReturn(null);
+
+    $provider->shouldReceive('getAccessTokenResponse')->once()->andReturn($token);
+
+    // Simulate missing fields
+    $user = [
+        'id' => '12345',
+    ];
+
+    $provider->shouldReceive('getUserByToken')->once()->with('access-token')->andReturn($user);
+
+    $result = $provider->user();
+
+    expect($result)->toBeInstanceOf(User::class)
+        ->and($result->getId())->toBe('12345')
+        ->and($result->getName())->toBeNull()
+        ->and($result->getEmail())->toBeNull()
+        ->and($result->getAvatar())->toBeNull();
+});
