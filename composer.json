@@ -1,0 +1,60 @@
+{
+    "name": "elliottlawson/laravel-socialite-linear",
+    "description": "Linear OAuth provider for Laravel Socialite",
+    "keywords": [
+        "laravel",
+        "socialite",
+        "linear",
+        "oauth",
+        "authentication"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Elliott Lawson"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "laravel/socialite": "^5.0",
+        "illuminate/support": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^8.0|^9.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "ElliottLawson\\SocialiteLinear\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ElliottLawson\\SocialiteLinear\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ElliottLawson\\SocialiteLinear\\LinearServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint",
+        "format-test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
