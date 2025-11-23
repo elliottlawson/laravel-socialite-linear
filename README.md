@@ -92,6 +92,18 @@ return Socialite::driver('linear')
     ->redirect();
 ```
 
+### Customizing User Fields
+
+By default, the provider requests `id`, `name`, `email`, and `avatarUrl` from Linear's API. You can customize which fields to retrieve:
+
+```php
+return Socialite::driver('linear')
+    ->fields(['id', 'name', 'email', 'avatarUrl', 'admin', 'active', 'timezone'])
+    ->redirect();
+```
+
+Any valid Linear GraphQL viewer fields are supported. See [Linear's API documentation](https://studio.apollographql.com/public/Linear-API/variant/current/home) for available fields.
+
 ### Using the Access Token
 
 After authentication, you can use the access token to make API calls to Linear. The token is available on the user object:
@@ -107,7 +119,7 @@ $linear = new Linear\Client($accessToken);
 
 ### Token Refresh
 
-Linear access tokens expire after 24 hours. If your OAuth application has refresh tokens enabled (default for apps created after October 1, 2025), you'll receive a refresh token:
+Linear access tokens expire after 24 hours. Refresh tokens are provided by default for OAuth applications created after October 1, 2025. When you authenticate a user, you'll receive both tokens:
 
 ```php
 $user = Socialite::driver('linear')->user();
@@ -117,7 +129,19 @@ $refreshToken = $user->refreshToken; // Store this securely
 $expiresIn = $user->expiresIn; // 86400 (24 hours)
 ```
 
-You'll need to implement your own token refresh logic using Linear's token endpoint when the access token expires.
+To refresh an expired access token:
+
+```php
+use Laravel\Socialite\Facades\Socialite;
+
+$provider = Socialite::driver('linear');
+$newToken = $provider->refreshToken($storedRefreshToken);
+
+// Access the new tokens
+$newAccessToken = $newToken->token;
+$newRefreshToken = $newToken->refreshToken;
+$expiresIn = $newToken->expiresIn;
+```
 
 ### Stateless Authentication
 

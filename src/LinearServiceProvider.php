@@ -14,7 +14,7 @@ class LinearServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Socialite::extend('linear', function (Application $app) {
-            $config = $app['config']['services.linear'];
+            $config = $app->make('config')->get('services.linear');
 
             return Socialite::buildProvider(LinearProvider::class, $config);
         });
