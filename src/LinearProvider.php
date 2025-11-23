@@ -58,26 +58,40 @@ class LinearProvider extends AbstractProvider implements ProviderInterface
     protected function getUserByToken($token)
     {
         try {
-            $response = $this->getHttpClient()->post('https://api.linear.app/graphql', [
-                RequestOptions::HEADERS => [
-                    'Authorization' => 'Bearer '.$token,
-                    'Content-Type' => 'application/json',
-                ],
-                RequestOptions::JSON => [
-                    'query' => $this->getGraphQLQuery(),
-                ],
-            ]);
+            $response = $this->getHttpClient()->post(
+                'https://api.linear.app/graphql',
+                $this->getRequestOptions($token)
+            );
 
             $data = json_decode((string) $response->getBody(), true);
 
-            if (isset($data['errors'])) {
-                return [];
+            if (! isset($data['errors'])) {
+                return Arr::get($data, 'data.viewer', []);
             }
-
-            return Arr::get($data, 'data.viewer', []);
         } catch (Exception $e) {
-            return [];
+            // Fall through to return empty array
         }
+
+        return [];
+    }
+
+    /**
+     * Get the request options for the Linear GraphQL API.
+     *
+     * @param  string  $token
+     * @return array
+     */
+    protected function getRequestOptions($token)
+    {
+        return [
+            RequestOptions::HEADERS => [
+                'Authorization' => 'Bearer '.$token,
+                'Content-Type' => 'application/json',
+            ],
+            RequestOptions::JSON => [
+                'query' => $this->getGraphQLQuery(),
+            ],
+        ];
     }
 
     /**
